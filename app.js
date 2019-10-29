@@ -16,7 +16,9 @@ function app() {
 
     	try {
 
+
         const $ = cheerio.load(data.body);
+        console.log($)
 
         $('div.g').each(function(i, element) {
             const title = $(this).find('.r').text();
