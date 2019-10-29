@@ -36,14 +36,12 @@ function app() {
         		app();
         	 }, process.env.SNOOZE_INTERVAL * 3600000);
 
-        	 // }, 43200000);
         } else {
         	console.log("No news found ...")
         	console.log(`Going to sleep for ${process.env.CHECK_INTERVAL}h ...`)
         	setTimeout(function(){ 
         		app();
         	 }, process.env.CHECK_INTERVAL * 3600000);
-        	 // }, 3600000);
         }
 
 
