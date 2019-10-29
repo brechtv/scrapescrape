@@ -7,53 +7,47 @@ require('dotenv').config();
 app();
 
 function app() {
-    let resultData = [];
     const searchTerm = process.env.SEARCH_TERM
     const searchUrl = 'https://www.google.com/search?q=' + searchTerm + '&tbm=nws&tbs=qdr:d';
-    const getNews = util.promisify(request);
+    const savedData = [];
 
-    getNews(searchUrl).then(data => {
-    	console.log(data)
-
-    	try {
-
-
-        const $ = cheerio.load(data.body);
-        console.log($)
+    request(searchUrl, function(err, response, html) {
+        if (err) {
+            return res.status(500).send(err);
+        }
+        var $ = cheerio.load(html);
 
         $('div.g').each(function(i, element) {
-            const title = $(this).find('.r').text();
-            const link = $(this).find('.r').find('a').attr('href').replace('/url?q=', '').split('&')[0];
-
-            resultData.push({
-                title,
-                link
+            var title = $(this).find('.r').text();
+            var link = $(this).find('.r').find('a').attr('href').replace('/url?q=', '').split('&')[0];
+            savedData.push({
+                title: title,
+                link: link
             });
         });
 
-        if (resultData.length > 0) {
-            resultData = resultData.filter(obj => {
-                return obj.title.toLowerCase().includes(process.env.MUST_HAVE_TERM.toLowerCase())
-            })
-            resultData = resultData[0];
-            console.log(resultData)
+        filteredData = savedData.filter(obj => (obj.title.toLowerCase().includes(process.env.MUST_HAVE_TERM.toLowerCase())));
 
-            sendSMS("New article: " + resultData.title + " -- " + resultData.link)
-            console.log("Found news! Going to sleep for 24h ... ");
-            setTimeout(function() {
-                app();
-            }, 1000 * 60 * 60 * 24);
-
+        if(filteredData.length > 0) {
+        	console.log("Found news ...")
+        	console.log(filteredData);
+        	console.log("Going to sleep for 12h ...")
+        	setTimeout(function(){ 
+        		app();
+        	 }, 43200000);
         } else {
-        	console.log("No news, Going to sleep for 30min ... ");
-            setTimeout(function() {
-                app();
-            }, 1000 * 60 * 60 * 24);
+        	console.log("No news found ...")
+        	console.log("Going to sleep for 1h ...")
+        	setTimeout(function(){ 
+        		app();
+        	 }, 3600000);
         }
-    } catch(err) {
-    	console.log(err)
-    }
-    }).catch(err => console.log('error: ', err))
+
+
+
+
+
+    });
 };
 
 function sendSMS(text) {
