@@ -30,7 +30,11 @@ function app() {
 
         if(filteredData.length > 0) {
         	console.log("Found news ...")
-        	console.log(filteredData);
+
+        	const news = filteredData[0]
+        	sendSMS(`News about '${process.env.SEARCH_TERM}': ${news.title} -- ${news.link}`)
+
+
         	console.log(`Going to sleep for ${process.env.SNOOZE_INTERVAL}h ...`)
         	setTimeout(function(){ 
         		app();
@@ -62,5 +66,5 @@ function sendSMS(text) {
             from: process.env.FROM_NUMBER,
             to: process.env.TO_NUMBER
         })
-        .then(message => console.log("Sent SMS from Twilio " + message.sid));
+        .then(message => console.log("Sent SMS from Twilio!"));
 }
