@@ -34,7 +34,7 @@ function app() {
         	console.log("Going to sleep for 12h ...")
         	setTimeout(function(){ 
         		app();
-        	 }, 5000);
+        	 }, process.env.SNOOZE_INTERVAL * 3600000);
 
         	 // }, 43200000);
         } else {
@@ -42,7 +42,7 @@ function app() {
         	console.log("Going to sleep for 1h ...")
         	setTimeout(function(){ 
         		app();
-        	 }, 5000);
+        	 }, process.env.CHECK_INTERVAL * 3600000);
         	 // }, 3600000);
         }
 
