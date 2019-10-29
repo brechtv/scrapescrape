@@ -33,8 +33,9 @@ function app() {
                 return obj.title.toLowerCase().includes(process.env.MUST_HAVE_TERM.toLowerCase())
             })
             resultData = resultData[0];
+            console.log(resultData)
 
-            sendSMS(`New article about '${process.env.SEARCH_TERM}': ${resultData.title} -- ${resultData.link}`)
+            sendSMS(`New article: ${resultData.title} -- ${resultData.link}`)
             console.log("Found news! Going to sleep for 24h ... ");
             setTimeout(function() {
                 app();
