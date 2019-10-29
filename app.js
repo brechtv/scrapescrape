@@ -13,6 +13,7 @@ function app() {
     const getNews = util.promisify(request);
 
     getNews(searchUrl).then(data => {
+    	console.log(data)
 
     	try {
 
