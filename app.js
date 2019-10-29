@@ -34,13 +34,16 @@ function app() {
         	console.log("Going to sleep for 12h ...")
         	setTimeout(function(){ 
         		app();
-        	 }, 43200000);
+        	 }, 5000);
+
+        	 // }, 43200000);
         } else {
         	console.log("No news found ...")
         	console.log("Going to sleep for 1h ...")
         	setTimeout(function(){ 
         		app();
-        	 }, 3600000);
+        	 }, 5000);
+        	 // }, 3600000);
         }
 
 
