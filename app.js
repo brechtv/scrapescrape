@@ -31,7 +31,7 @@ function app() {
         if(filteredData.length > 0) {
         	console.log("Found news ...")
         	console.log(filteredData);
-        	console.log("Going to sleep for 12h ...")
+        	console.log(`Going to sleep for ${process.env.SNOOZE_INTERVAL}h ...`)
         	setTimeout(function(){ 
         		app();
         	 }, process.env.SNOOZE_INTERVAL * 3600000);
@@ -39,7 +39,7 @@ function app() {
         	 // }, 43200000);
         } else {
         	console.log("No news found ...")
-        	console.log("Going to sleep for 1h ...")
+        	console.log(`Going to sleep for ${process.env.CHECK_INTERVAL}h ...`)
         	setTimeout(function(){ 
         		app();
         	 }, process.env.CHECK_INTERVAL * 3600000);
