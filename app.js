@@ -2,47 +2,61 @@ const request = require('request');
 const util = require('util');
 const cheerio = require('cheerio');
 
-require('dotenv').config()
+require('dotenv').config();
 
-
-app()
-
+app();
 
 function app() {
+    let resultData = [];
     const searchTerm = process.env.SEARCH_TERM
     const searchUrl = 'https://www.google.com/search?q=' + searchTerm + '&tbm=nws&tbs=qdr:d';
     const getNews = util.promisify(request);
 
     getNews(searchUrl).then(data => {
-        const savedData = [];
+
         const $ = cheerio.load(data.body);
 
         $('div.g').each(function(i, element) {
             const title = $(this).find('.r').text();
             const link = $(this).find('.r').find('a').attr('href').replace('/url?q=', '').split('&')[0];
 
-            savedData.push({
+            resultData.push({
                 title,
                 link
             });
         });
 
-        const relevantData = savedData.find(o => o['title'].toLowerCase().includes(process.env.MUST_HAVE_TERM.toLowerCase()));
-        console.log(relevantData)
-    }).catch(err => console.log('error: ', err))
-}
+        if (resultData.length > 0) {
+            resultData = resultData.filter(obj => {
+                return obj.title.toLowerCase().includes(process.env.MUST_HAVE_TERM.toLowerCase())
+            })
+            resultData = resultData[0];
 
+            sendSMS(`New article about '${process.env.SEARCH_TERM}': ${resultData.title} -- ${resultData.link}`)
+            console.log("Found news! Going to sleep for 24h ... ");
+            setTimeout(function() {
+                app();
+            }, 1000 * 60 * 60 * 24);
+
+        } else {
+        	console.log("No news, Going to sleep for 30min ... ");
+            setTimeout(function() {
+                app();
+            }, 1000 * 60 * 60 * 24);
+        }
+    }).catch(err => console.log('error: ', err))
+};
 
 function sendSMS(text) {
-    this.accountSid = process.env.TWILIO_ACCOUNT || 'AC40ac9addeaa7b822429aec40de07965b';
-    this.authToken = process.env.TWILIO_TOKEN || 'f518839e3d8ca792f0e302b493421e08';
+    this.accountSid = process.env.TWILIO_ACCOUNT;
+    this.authToken = process.env.TWILIO_TOKEN;
     this.client = require('twilio')(accountSid, authToken);
 
     client.messages
         .create({
             body: text,
-            from: '+14804280602',
-            to: '+353873413251'
+            from: process.env.FROM_NUMBER,
+            to: process.env.TO_NUMBER
         })
-        .then(message => console.log(message.sid));
+        .then(message => console.log("Sent SMS from Twilio " + message.sid));
 }
