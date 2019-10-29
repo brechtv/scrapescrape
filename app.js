@@ -14,6 +14,8 @@ function app() {
 
     getNews(searchUrl).then(data => {
 
+    	try {
+
         const $ = cheerio.load(data.body);
 
         $('div.g').each(function(i, element) {
@@ -44,6 +46,9 @@ function app() {
                 app();
             }, 1000 * 60 * 60 * 24);
         }
+    } catch(err) {
+    	console.log(err)
+    }
     }).catch(err => console.log('error: ', err))
 };
 
