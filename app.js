@@ -8,9 +8,14 @@ const twilioClient = require('twilio')(
     process.env.TWILIO_TOKEN
 );
 
+const is_dry_run = process.env.DRY_RUN.toUpperCase() === "TRUE";
+
 app();
 
 function app() {
+    if(is_dry_run) {
+        console.log("NOTE: This is a dry run ...")
+    }
     // check if env vars are set
     if (
         process.env.TWILIO_ACCOUNT &&
@@ -52,15 +57,22 @@ function app() {
                 // filter by keyword on the headline
                 filteredData = savedData.filter(obj => (obj.title.toLowerCase().includes(process.env.MUST_HAVE_TERM.toLowerCase())));
 
+
                 // if we got data back including both keywords
                 if (filteredData.length > 0) {
                     console.log("Found news ...");
 
                     // get the first headline only
                     const news = filteredData[0];
+                    console.log(news.title);
 
                     // sms job for twilio
                     function sendSMS(to_number, text) {
+
+                        if(is_dry_run) {
+                            console.log(`Dry run: not sending SMS to ${to_number}. Just pretend it does`)
+                            return
+                        }
 
                         twilioClient.messages
                             .create({
