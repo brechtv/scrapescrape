@@ -74,7 +74,7 @@ function app() {
                     const numbers = process.env.TO_NUMBER.split(" ");
                     console.log(numbers);
                     const msg = `News about '${process.env.SEARCH_TERM}': ${news.title} -- ${news.link}`
-                    // for each to_number, send sms
+                        // for each to_number, send sms
                     numbers.forEach(number => sendSMS(number, msg));
 
                     // sleep for a while so we don't get spammed
@@ -83,14 +83,14 @@ function app() {
                     setTimeout(function() {
                         app();
                     }, process.env.SNOOZE_INTERVAL * 3600000);
+                } else {
+                    // nothing found, keep checking
+                    console.log("No news found ...")
+                    console.log(`Going to sleep for ${process.env.CHECK_INTERVAL}h ...`)
+                    setTimeout(function() {
+                        app();
+                    }, process.env.CHECK_INTERVAL * 3600000);
                 }
-            } else {
-                // nothing found, keep checking
-                console.log("No news found ...")
-                console.log(`Going to sleep for ${process.env.CHECK_INTERVAL}h ...`)
-                setTimeout(function() {
-                    app();
-                }, process.env.CHECK_INTERVAL * 3600000);
             }
         });
     } else {
