@@ -4,11 +4,14 @@ const request = require("request");
 const util = require("util");
 const cheerio = require("cheerio");
 const twilioClient = require('twilio')(
-    process.env.TWILIO_ACCOUNT, 
+    process.env.TWILIO_ACCOUNT,
     process.env.TWILIO_TOKEN
-    );
+);
 
-(function() {
+app();
+
+function app() {
+    // check if env vars are set
     if (
         process.env.TWILIO_ACCOUNT &&
         process.env.TWILIO_TOKEN &&
@@ -24,51 +27,65 @@ const twilioClient = require('twilio')(
         const savedData = [];
 
         request(searchUrl, function(err, response, html) {
+
             if (err) {
-                console.log(err);
-                return res.status(500).send(err);
-            };
-
-            const $ = cheerio.load(html);
-
-            $('div.g').each(function(i, element) {
-                const title = $(this).find('.r').text();
-                const link = $(this).find('.r').find('a').attr('href').replace('/url?q=', '').split('&')[0];
-                savedData.push({
-                    title: title,
-                    link: link
-                });
-            });
-
-            filteredData = savedData.filter(obj => (obj.title.toLowerCase().includes(process.env.MUST_HAVE_TERM.toLowerCase())));
-
-            if (filteredData.length > 0) {
-                console.log("Found news ...");
-
-                const news = filteredData[0];
-
-                function sendSMS(to_number, text) {
-
-                    twilioClient.messages
-                        .create({
-                            body: text,
-                            from: process.env.FROM_NUMBER,
-                            to: to_number
-                        }).then(message => console.log(`Sent SMS to ${to_number} from Twilio!`));
-                }
-
-                const numbers = process.env.TO_NUMBER.split(" ");
-                console.log(numbers);
-                const msg = `News about '${process.env.SEARCH_TERM}': ${news.title} -- ${news.link}`
-                numbers.forEach(number => sendSMS(number, msg));
-
-
-                console.log(`Going to sleep for ${process.env.SNOOZE_INTERVAL}h ...`)
+                // if we get an error, log silently and move on
+                console.log("Error ...", err)
+                console.log(`Going to sleep for ${process.env.CHECK_INTERVAL}h ...`)
                 setTimeout(function() {
                     app();
-                }, process.env.SNOOZE_INTERVAL * 3600000);
-
+                }, process.env.CHECK_INTERVAL * 3600000);
             } else {
+                // parse into jq
+                const $ = cheerio.load(html);
+
+                // extract title and links from gnews
+                $('div.g').each(function(i, element) {
+                    const title = $(this).find('.r').text();
+                    const link = $(this).find('.r').find('a').attr('href').replace('/url?q=', '').split('&')[0];
+                    savedData.push({
+                        title: title,
+                        link: link
+                    });
+                });
+
+                // filter by keyword on the headline
+                filteredData = savedData.filter(obj => (obj.title.toLowerCase().includes(process.env.MUST_HAVE_TERM.toLowerCase())));
+
+                // if we got data back including both keywords
+                if (filteredData.length > 0) {
+                    console.log("Found news ...");
+
+                    // get the first headline only
+                    const news = filteredData[0];
+
+                    // sms job for twilio
+                    function sendSMS(to_number, text) {
+
+                        twilioClient.messages
+                            .create({
+                                body: text,
+                                from: process.env.FROM_NUMBER,
+                                to: to_number
+                            }).then(message => console.log(`Sent SMS to ${to_number} from Twilio!`));
+                    }
+
+                    // if we have multiple to_numbers, split
+                    const numbers = process.env.TO_NUMBER.split(" ");
+                    console.log(numbers);
+                    const msg = `News about '${process.env.SEARCH_TERM}': ${news.title} -- ${news.link}`
+                    // for each to_number, send sms
+                    numbers.forEach(number => sendSMS(number, msg));
+
+                    // sleep for a while so we don't get spammed
+                    // gnews url timeframe is 24h so best to set SNOOZE_INTERVAL to 24 as well
+                    console.log(`Going to sleep for ${process.env.SNOOZE_INTERVAL}h ...`)
+                    setTimeout(function() {
+                        app();
+                    }, process.env.SNOOZE_INTERVAL * 3600000);
+                }
+            } else {
+                // nothing found, keep checking
                 console.log("No news found ...")
                 console.log(`Going to sleep for ${process.env.CHECK_INTERVAL}h ...`)
                 setTimeout(function() {
@@ -79,4 +96,4 @@ const twilioClient = require('twilio')(
     } else {
         throw new Error("Environment variables not set!");
     }
-})();
+}
