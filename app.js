@@ -27,6 +27,8 @@ function app() {
         process.env.CHECK_INTERVAL &&
         process.env.SNOOZE_INTERVAL
     ) {
+        console.log(`Checking for keyword '${process.env.SEARCH_TERM}' and must-have '${process.env.MUST_HAVE_TERM}' ...`)
+
         const searchTerm = process.env.SEARCH_TERM;
         const searchUrl = `https://www.google.com/search?q=${searchTerm}&tbm=nws&tbs=qdr:d`;
         const savedData = [];
