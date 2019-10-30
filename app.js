@@ -62,7 +62,7 @@ function app() {
 
                 // if we got data back including both keywords
                 if (filteredData.length > 0) {
-                    console.log("Found news ...");
+                    console.log("Found news!");
 
                     // get the first headline only
                     const news = filteredData[0];
@@ -87,7 +87,7 @@ function app() {
                     // if we have multiple to_numbers, split
                     const numbers = process.env.TO_NUMBER.split(" ");
                     console.log(numbers);
-                    const msg = `News about '${process.env.SEARCH_TERM}': ${news.title} -- ${news.link}`
+                    const msg = `📰🤩 News about '${process.env.SEARCH_TERM}': ${news.title} -- ${news.link}`
                         // for each to_number, send sms
                     numbers.forEach(number => sendSMS(number, msg));
 
@@ -99,7 +99,7 @@ function app() {
                     }, process.env.SNOOZE_INTERVAL * 3600000);
                 } else {
                     // nothing found, keep checking
-                    console.log("No news found ...")
+                    console.log("No news found!")
                     console.log(`Going to sleep for ${process.env.CHECK_INTERVAL}h ...`)
                     setTimeout(function() {
                         app();
